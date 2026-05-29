@@ -20,9 +20,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     
-    // Bind scroll controller to trigger loadMore when reaching the bottom
-    _scrollController.addListener(_onScroll);
-    
     // Initial fetch of products
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductProvider>(context, listen: false).fetchInitialProducts();
@@ -36,13 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  void _onScroll() {
-    final provider = Provider.of<ProductProvider>(context, listen: false);
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      provider.loadMoreProducts();
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -234,10 +225,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
 
-        // Pagination Loader Indicator (Page loading more spinner at bottom)
-        if (provider.isLoadMoreRunning)
+        // Pagination Controls
+        if (provider.lastPage > 1 && !provider.isLoading)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               color: const Color(0xFF161616),
               border: Border(
@@ -247,43 +238,48 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4AF37)),
+                // Previous Button
+                IconButton(
+                  icon: const Icon(Icons.chevron_left),
+                  color: provider.currentPage > 1 ? const Color(0xFFD4AF37) : Colors.white24,
+                  onPressed: provider.currentPage > 1 
+                      ? () {
+                          provider.fetchPage(provider.currentPage - 1);
+                          _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                        }
+                      : null,
+                ),
+                
+                // Page Indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.2)),
+                  ),
+                  child: Text(
+                    'Page ${provider.currentPage} of ${provider.lastPage}',
+                    style: const TextStyle(
+                      color: Color(0xFFF5F5F0),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  'LOAD MORE ELIXIRS...',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.4),
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.5,
-                  ),
+                
+                // Next Button
+                IconButton(
+                  icon: const Icon(Icons.chevron_right),
+                  color: provider.currentPage < provider.lastPage ? const Color(0xFFD4AF37) : Colors.white24,
+                  onPressed: provider.currentPage < provider.lastPage 
+                      ? () {
+                          provider.fetchPage(provider.currentPage + 1);
+                          _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+                        }
+                      : null,
                 ),
               ],
-            ),
-          ),
-          
-        // End of products catalog warning
-        if (provider.currentPage == provider.lastPage && filtered.isNotEmpty && !provider.isLoading)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            color: Colors.black.withOpacity(0.3),
-            alignment: Alignment.center,
-            child: Text(
-              'YOU HAVE DISCOVERED ALL LUXURY SELECTIONS (${provider.products.length} SCENTS)',
-              style: TextStyle(
-                color: const Color(0xFFD4AF37).withOpacity(0.4),
-                fontSize: 8,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
-              ),
             ),
           ),
       ],

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
+import '../providers/wishlist_provider.dart';
 import 'cart_screen.dart';
 import 'home_screen.dart';
-import 'study_guide_screen.dart';
+import 'wishlist_screen.dart';
+import 'profile_screen.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -17,13 +19,15 @@ class _MainNavigationState extends State<MainNavigation> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
+    const WishlistScreen(),
     const CartScreen(),
-    const StudyGuideScreen(),
+    const ProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     final cartItemCount = Provider.of<CartProvider>(context).totalItemCount;
+    final wishlistItemCount = Provider.of<WishlistProvider>(context).itemCount;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F),
@@ -66,6 +70,73 @@ class _MainNavigationState extends State<MainNavigation> {
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home_rounded),
               label: 'Boutique',
+            ),
+            
+            // Wishlist Tab
+            BottomNavigationBarItem(
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Icons.favorite_border),
+                  if (wishlistItemCount > 0)
+                    Positioned(
+                      top: -4,
+                      right: -6,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 14,
+                          minHeight: 14,
+                        ),
+                        child: Text(
+                          '$wishlistItemCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              activeIcon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Icons.favorite),
+                  if (wishlistItemCount > 0)
+                    Positioned(
+                      top: -4,
+                      right: -6,
+                      child: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: const BoxDecoration(
+                          color: Colors.redAccent,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 14,
+                          minHeight: 14,
+                        ),
+                        child: Text(
+                          '$wishlistItemCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              label: 'Wishlist',
             ),
             
             // Cart Tab with live Badge
@@ -135,11 +206,11 @@ class _MainNavigationState extends State<MainNavigation> {
               label: 'Cart',
             ),
             
-            // Interactive Study Guide
+            // Profile Tab
             const BottomNavigationBarItem(
-              icon: Icon(Icons.school_outlined),
-              activeIcon: Icon(Icons.school_rounded),
-              label: 'Study Hub',
+              icon: Icon(Icons.person_outline),
+              activeIcon: Icon(Icons.person),
+              label: 'Profile',
             ),
           ],
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/product.model.dart';
 import '../providers/cart_provider.dart';
+import '../providers/wishlist_provider.dart';
 import '../screens/product_detail.dart';
 
 class ProductCard extends StatelessWidget {
@@ -15,6 +16,8 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
+    final isInWishlist = wishlistProvider.isInWishlist(product.id);
 
     return GestureDetector(
       onTap: () {
@@ -85,10 +88,66 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                     
+                    // Wishlist Heart Icon
+                    Positioned(
+                      top: 8,
+                      left: 8,
+                      child: GestureDetector(
+                        onTap: () {
+                          wishlistProvider.toggleWishlist(product);
+                          final isAdded = wishlistProvider.isInWishlist(product.id);
+                          if (isAdded) {
+                            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: const Color(0xFF1E1E1E),
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.only(
+                                  bottom: MediaQuery.of(context).size.height * 0.7,
+                                  left: 20,
+                                  right: 20,
+                                ),
+                                dismissDirection: DismissDirection.up,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  side: const BorderSide(color: Color(0xFFD4AF37), width: 1),
+                                ),
+                                content: Row(
+                                  children: [
+                                    const Icon(Icons.favorite, color: Colors.redAccent),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        '${product.name} added to wishlist!',
+                                        style: const TextStyle(color: Color(0xFFF5F5F0)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isInWishlist ? Icons.favorite : Icons.favorite_border,
+                            color: isInWishlist ? Colors.redAccent : Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    
                     // Stock Warning Badge
                     if (product.stockQuantity <= 5 && product.stockQuantity > 0)
                       Positioned(
-                        top: 8,
+                        top: 40,
                         left: 8,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -108,7 +167,7 @@ class ProductCard extends StatelessWidget {
                       )
                     else if (!product.inStock)
                       Positioned(
-                        top: 8,
+                        top: 40,
                         left: 8,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -216,6 +275,12 @@ class ProductCard extends StatelessWidget {
                                     SnackBar(
                                       backgroundColor: const Color(0xFF1E1E1E),
                                       behavior: SnackBarBehavior.floating,
+                                      margin: EdgeInsets.only(
+                                        bottom: MediaQuery.of(context).size.height * 0.7,
+                                        left: 20,
+                                        right: 20,
+                                      ),
+                                      dismissDirection: DismissDirection.up,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                         side: const BorderSide(color: Color(0xFFD4AF37), width: 1),
